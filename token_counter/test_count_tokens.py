@@ -47,47 +47,47 @@ def test_parse_arguments_success(test_file):
 def test_parse_arguments_failure():
     """Failing to include a file to parse should cause a system exit."""
     sys.argv = ["count_tokens.py"]
-    with pytest.raises(SystemExit) as cm:
+    with pytest.raises(SystemExit) as exc:
         _ = count_tokens.parse_arguments()
-    assert cm.value.code == EXIT_FAILURE_MISUSE_OF_SHELL_COMMAND
+    assert exc.value.code == EXIT_FAILURE_MISUSE_OF_SHELL_COMMAND
 
 
 def test_process_tokens_success(test_file):
     """The expected token count should be returned."""
-    input_str = count_tokens.read_file(test_file)
-    token_count = count_tokens.process_tokens(input_str, "gpt-4")
+    file_content = count_tokens.read_file(test_file)
+    token_count = count_tokens.process_tokens(file_content, "gpt-4")
     assert token_count == 30
 
 
 def test_empty_string_raises_exception():
     """An empty file should raise an exception."""
-    with pytest.raises(ValueError) as cm:
+    with pytest.raises(ValueError) as exc:
         count_tokens.process_tokens("")
-    assert str(cm.value) == "No tokens found in the input string."
+    assert str(exc.value) == "No tokens found in the input string."
 
 
 def test_system_exit_upon_empty_file(empty_file):
     """An empty file causes a system exit from main."""
     sys.argv = ["count_tokens.py", empty_file]
-    with pytest.raises(SystemExit) as cm:
+    with pytest.raises(SystemExit) as exc:
         count_tokens.main()
-    assert cm.value.code == EXIT_GENERAL_FAILURE
+    assert exc.value.code == EXIT_GENERAL_FAILURE
 
 
 def test_system_exit_upon_non_existent_file():
     """A non-existent file should cause a system exit from main."""
     sys.argv = ["count_tokens.py", "non_existent_file.txt"]
-    with pytest.raises(SystemExit) as cm:
+    with pytest.raises(SystemExit) as exc:
         count_tokens.main()
-    assert cm.value.code == EXIT_GENERAL_FAILURE
+    assert exc.value.code == EXIT_GENERAL_FAILURE
 
 
 def test_full_run_success(test_file):
     """A valid run from main should return a success code."""
     sys.argv = ["count_tokens.py", test_file]
-    with pytest.raises(SystemExit) as cm:
+    with pytest.raises(SystemExit) as exc:
         count_tokens.main()
-    assert cm.value.code == EXIT_SUCCESS
+    assert exc.value.code == EXIT_SUCCESS
 
 
 def test_directory_analysis_basic(tmp_path):
@@ -97,7 +97,7 @@ def test_directory_analysis_basic(tmp_path):
     file2 = tmp_path / "b.txt"
     file2.write_text("another file", encoding="utf-8")
 
-    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    processed_files, _ = count_tokens.analyze_directory(str(tmp_path))
     # Basic sanity: both files counted
     assert len(processed_files) == 2
     assert str(file1) in processed_files
@@ -128,7 +128,7 @@ def test_directory_analysis_keeps_non_ignored_files(tmp_path):
     kept = tmp_path / "keep.py"
     kept.write_text("print('hi')", encoding="utf-8")
 
-    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    processed_files, _ = count_tokens.analyze_directory(str(tmp_path))
     assert str(kept) in processed_files
     assert len(processed_files) == 1
 
@@ -154,7 +154,7 @@ def test_directory_custom_ignore_file(tmp_path):
     kept_file = tmp_path / "keep.py"
     kept_file.write_text("print('hello')", encoding="utf-8")
 
-    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    processed_files, _ = count_tokens.analyze_directory(str(tmp_path))
 
     # Only the kept file should be in results
     assert len(processed_files) == 1
@@ -170,7 +170,7 @@ def test_directory_analysis_ignores_binary_files(tmp_path):
     kept = tmp_path / "keep.py"
     kept.write_text("print('hi')", encoding="utf-8")
 
-    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    processed_files, _ = count_tokens.analyze_directory(str(tmp_path))
     assert str(kept) in processed_files
     assert str(binary_file) not in processed_files
     assert len(processed_files) == 1
