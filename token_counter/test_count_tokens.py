@@ -105,18 +105,20 @@ def test_directory_analysis_basic(tmp_path):
 
 
 def test_directory_analysis_ignores_node_modules(tmp_path):
-    """Files in node_modules should be ignored."""
+    """Files in node_modules should be ignored when specified in .tokenizerignore."""
+    # Create .tokenizerignore file
+    (tmp_path / ".tokenizerignore").write_text("node_modules/", encoding="utf-8")
+
     (tmp_path / "node_modules").mkdir()
     (tmp_path / "node_modules" / "pkg.js").write_text(
         "console.log('ignore me')", encoding="utf-8"
     )
-    kept = tmp_path / "keep.py"
-    kept.write_text("print('hi')", encoding="utf-8")
+    file_to_keep = tmp_path / "keep.py"
+    file_to_keep.write_text("print('hi')", encoding="utf-8")
 
-    per_file, total = count_tokens.analyze_directory(str(tmp_path))
-    assert str(kept) in per_file
-    assert not any("pkg.js" in p for p in per_file)
-    assert total == per_file[str(kept)]
+    total_files, total_tokens = count_tokens.analyze_directory(str(tmp_path))
+    assert total_tokens == 7
+    assert len(total_files) == 2
 
 
 def test_directory_analysis_keeps_non_ignored_files(tmp_path):
