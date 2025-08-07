@@ -50,27 +50,10 @@ the directory you pass. Each non‑blank, non‑comment line is treated as a
 glob pattern (similar to a very small subset of `.gitignore` syntax) and
 matched against both full relative paths and individual path segments.
 
-An example (the default file shipped with this repository):
+If no `.tokenizerignore` exists, no files are ignored (all files in the directory tree are processed).
 
-```text
-# Python
-__pycache__/
-*.pyc
-.venv/
+Add exclusions by creating entries in the `.tokenizerignore` file.
 
-# Node
-node_modules/
-
-# Git / Tooling
-.git/
-.vscode/
-```
-
-If no `.tokenizerignore` exists, a built‑in default set of patterns for
-common Python / Node / Git clutter is used automatically so you still
-avoid counting dependencies and build artifacts.
-
-You can customize exclusions by editing or creating `.tokenizerignore`.
 Patterns are simple shell globs (handled with Python `fnmatch`). A
 trailing `/` is optional and only used for readability.
 
@@ -97,8 +80,6 @@ git clone git@github.com:binarysubstrate/token-counter.git
 
 # HTTPS
 git clone https://github.com/binarysubstrate/token-counter.git
-
-
 ```
 
 ### Set Python version (pyenv)
@@ -108,13 +89,13 @@ Install Python ^3.12 if you don't have it yet:
 ```shell
 # Example
 # Skip if installed
-pyenv install 3.31.1  
+pyenv install 3.13.1  
 ```
 
 Set the local version (writes `.python-version`):
 
 ```shell
-pyenv local 3.31.1  
+pyenv local 3.13.1  
 ```
 
 On Windows (pyenv-win) the commands are the same once pyenv-win is installed.

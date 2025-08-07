@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "addopts",
+    "fnmatch",
     "pyenv",
     "pyproject",
     "pytest",
