@@ -132,32 +132,34 @@ def test_directory_analysis_keeps_non_ignored_files(tmp_path):
 
 
 def test_directory_custom_ignore_file(tmp_path):
-    """A custom .tokenizerignore should augment (and de-duplicate) defaults."""
-    (tmp_path / "data").mkdir()
-    inc = tmp_path / "data" / "include.txt"
-    exc_dir = tmp_path / "skipme"
-    exc_dir.mkdir()
-    inc.write_text("some content here", encoding="utf-8")
-    (exc_dir / "ignored.txt").write_text("should not count", encoding="utf-8")
-    # Custom ignore file
-    (tmp_path / ".tokenizerignore").write_text(
-        textwrap.dedent(
-            """
-            # Comment line
-            skipme/
-            """
-        ).strip(),
-        encoding="utf-8",
+    """Custom ignore patterns should be respected during directory analysis."""
+    # Create a custom .tokenizerignore file with specific patterns
+    ignore_file = tmp_path / ".tokenizerignore"
+    ignore_file.write_text(
+        "*.log\ntemp/\n.tokenizerignore\n# Comment line\n\n", encoding="utf-8"
     )
 
+    # Create files that should be ignored
+    log_file = tmp_path / "debug.log"
+    log_file.write_text("log entry", encoding="utf-8")
+
+    temp_directory = tmp_path / "temp"
+    temp_directory.mkdir()
+    temp_file = temp_directory / "cache.txt"
+    temp_file.write_text("temporary data", encoding="utf-8")
+
+    # Create file that should NOT be ignored
+    kept_file = tmp_path / "keep.py"
+    kept_file.write_text("print('hello')", encoding="utf-8")
+
     per_file, total = count_tokens.analyze_directory(str(tmp_path))
-    assert str(inc) in per_file
-    # Ensure directory skip worked.
-    assert not any("ignored.txt" in p for p in per_file)
-    # Total should at least include the included file; ensure ignore file
-    # skipped.
-    assert per_file[str(inc)] <= total
-    assert not any(p.endswith(".tokenizerignore") for p in per_file)
+
+    # Only the kept file should be in results
+    assert len(per_file) == 1
+    assert str(kept_file) in per_file
+    assert str(log_file) not in per_file
+    assert str(temp_file) not in per_file
+    assert total == per_file[str(kept_file)]
 
 
 def test_directory_analysis_ignores_binary_files(tmp_path):
