@@ -1,0 +1,21 @@
+# Default ignore patterns for token-counter directory analysis
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Node / JavaScript
+node_modules/
+
+# Tooling
+.git/
