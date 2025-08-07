@@ -2,12 +2,15 @@
   "cSpell.words": [
     "addopts",
     "fnmatch",
+    "mypy",
+    "pycache",
     "pyenv",
     "pyproject",
     "pytest",
     "testpaths",
     "tiktoken",
-    "tokenizerignore"
+    "tokenizerignore",
+    "venv"
   ],
   "python.testing.pytestArgs": ["token_counter"],
   "python.testing.unittestEnabled": false,
