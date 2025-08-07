@@ -97,10 +97,11 @@ def test_directory_analysis_basic(tmp_path):
     file2 = tmp_path / "b.txt"
     file2.write_text("another file", encoding="utf-8")
 
-    per_file, total = count_tokens.analyze_directory(str(tmp_path))
-    # Basic sanity: both files counted, total equals sum.
-    assert len(per_file) == 2
-    assert total == sum(per_file.values())
+    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    # Basic sanity: both files counted
+    assert len(processed_files) == 2
+    assert str(file1) in processed_files
+    assert str(file2) in processed_files
 
 
 def test_directory_analysis_ignores_node_modules(tmp_path):
@@ -115,9 +116,11 @@ def test_directory_analysis_ignores_node_modules(tmp_path):
     file_to_keep = tmp_path / "keep.py"
     file_to_keep.write_text("print('hi')", encoding="utf-8")
 
-    total_files, total_tokens = count_tokens.analyze_directory(str(tmp_path))
+    processed_files, total_tokens = count_tokens.analyze_directory(str(tmp_path))
     assert total_tokens == 7
-    assert len(total_files) == 2
+    assert len(processed_files) == 2  # keep.py and .tokenizerignore
+    assert str(file_to_keep) in processed_files
+    assert str(tmp_path / ".tokenizerignore") in processed_files
 
 
 def test_directory_analysis_keeps_non_ignored_files(tmp_path):
@@ -125,9 +128,9 @@ def test_directory_analysis_keeps_non_ignored_files(tmp_path):
     kept = tmp_path / "keep.py"
     kept.write_text("print('hi')", encoding="utf-8")
 
-    per_file, total = count_tokens.analyze_directory(str(tmp_path))
-    assert list(per_file.keys()) == [str(kept)]
-    assert total == per_file[str(kept)]
+    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    assert str(kept) in processed_files
+    assert len(processed_files) == 1
 
 
 def test_directory_custom_ignore_file(tmp_path):
@@ -151,14 +154,13 @@ def test_directory_custom_ignore_file(tmp_path):
     kept_file = tmp_path / "keep.py"
     kept_file.write_text("print('hello')", encoding="utf-8")
 
-    per_file, total = count_tokens.analyze_directory(str(tmp_path))
+    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
 
     # Only the kept file should be in results
-    assert len(per_file) == 1
-    assert str(kept_file) in per_file
-    assert str(log_file) not in per_file
-    assert str(temp_file) not in per_file
-    assert total == per_file[str(kept_file)]
+    assert len(processed_files) == 1
+    assert str(kept_file) in processed_files
+    assert str(log_file) not in processed_files
+    assert str(temp_file) not in processed_files
 
 
 def test_directory_analysis_ignores_binary_files(tmp_path):
@@ -168,7 +170,7 @@ def test_directory_analysis_ignores_binary_files(tmp_path):
     kept = tmp_path / "keep.py"
     kept.write_text("print('hi')", encoding="utf-8")
 
-    per_file, total = count_tokens.analyze_directory(str(tmp_path))
-    assert str(kept) in per_file
-    assert str(binary_file) not in per_file
-    assert total == per_file[str(kept)]
+    processed_files, total = count_tokens.analyze_directory(str(tmp_path))
+    assert str(kept) in processed_files
+    assert str(binary_file) not in processed_files
+    assert len(processed_files) == 1

@@ -16,7 +16,7 @@ Functions:
     process_tokens: Return the number of tokens in a string.
     load_ignore_patterns: Load ignore patterns from file.
     iter_files: Yield file paths under a directory honoring ignore rules.
-    analyze_directory: Return per-file and total token counts.
+    analyze_directory: Return processed files and total token counts.
     main: CLI entrypoint.
 
 Usage examples:
@@ -29,7 +29,7 @@ import os
 import sys
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Iterable, List, Set, Tuple
 
 import tiktoken
 
@@ -211,21 +211,20 @@ def _is_binary_file(fp: str, chunk_size: int = 1024) -> bool:
     return False
 
 
-def analyze_directory(directory: str) -> Tuple[Dict[str, int], int]:
+def analyze_directory(directory: str) -> Tuple[Set[str], int]:
     """Analyze every file within a directory tree.
 
     Args:
         directory: Path to directory to analyze.
 
     Returns:
-        (mapping of absolute file path -> token count, total token count)
+        (set of processed file paths, total token count)
 
     Raises:
         ValueError: If no tokens are found across all files.
     """
     ignored_patterns = load_ignore_patterns(directory)
-    # TODO: We're not really usings the tokens per file, we just need a count of files.
-    tokens_per_each_file: Dict[str, int] = {}
+    processed_files: Set[str] = set()
     total_tokens = 0
     for fp in traverse_files(directory, ignored_patterns):
         if _is_binary_file(fp):
@@ -240,12 +239,12 @@ def analyze_directory(directory: str) -> Tuple[Dict[str, int], int]:
         except ValueError:
             # Skip empty files.
             continue
-        tokens_per_each_file[fp] = count
+        processed_files.add(fp)
         total_tokens += count
 
     if total_tokens == 0:
         raise ValueError("No tokens found in directory (all files empty or ignored).")
-    return tokens_per_each_file, total_tokens
+    return processed_files, total_tokens
 
 
 def main():
@@ -260,11 +259,11 @@ def main():
         args = parse_arguments()
         input_path = args.input_fp
         if os.path.isdir(input_path):
-            tokens_per_each_file, total_tokens = analyze_directory(input_path)
+            processed_files, total_tokens = analyze_directory(input_path)
             print(
                 "Total tokens in directory '"
                 f"{input_path}': {total_tokens} across "
-                f"{len(tokens_per_each_file)} files."
+                f"{len(processed_files)} files."
             )
         else:
             input_str = read_file(input_path)
