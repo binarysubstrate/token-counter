@@ -79,7 +79,7 @@ def test_system_exit_upon_non_existent_file():
     sys.argv = ["count_tokens.py", "non_existent_file.txt"]
     with pytest.raises(SystemExit) as cm:
         count_tokens.main()
-    assert cm.value.code == 1
+    assert cm.value.code == EXIT_GENERAL_FAILURE
 
 
 def test_full_run_success(test_file):
