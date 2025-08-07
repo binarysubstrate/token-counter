@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-import count_tokens
+from token_counter import count_tokens
 
 EXIT_SUCCESS = 0
 EXIT_GENERAL_FAILURE = 1
