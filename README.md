@@ -12,13 +12,14 @@ To use this module, pass the file path of the file for which you want to count t
 
 `python count_tokens.py your_file.txt`
 
-## Dependencies
+## Dependencies & Tooling
 
-count-tokens requires:
+This project uses:
 
-- Python (>= 3.8)
-- tiktoken (>= 0.6)
-- pytest (>= 8)
+- Python ^3.12
+- [Poetry](https://python-poetry.org/) (dependency management)
+- `tiktoken` (runtime dependency)
+- `pytest` (dev dependency)
 
 ## Installation
 
@@ -38,33 +39,57 @@ git clone https://github.com/binarysubstrate/token-counter.git
 
 ```
 
-### Create virtual environment
+### Set Python version (pyenv)
 
-Create a virtual environment using venv:
+Install Python ^3.12 if you don't have it yet:
 
 ```shell
-python -m venv token_counter_venv
+# Example
+# Skip if installed
+pyenv install 3.31.1  
 ```
 
-Activate the virtual environment and install dependencies:
+Set the local version (writes `.python-version`):
 
 ```shell
-# On Windows
-.\token_counter_venv\Scripts\activate
+pyenv local 3.31.1  
+```
 
-# On Unix or MacOS
-source token_counter_venv/bin/activate
+On Windows (pyenv-win) the commands are the same once pyenv-win is installed.
 
-cd token-counter/token_counter
+### Install Poetry
 
-pip install -r ../requirements.txt
+If Poetry is not installed:
+
+```shell
+pip install --user poetry  # or follow official installer instructions
+```
+
+### Install dependencies
+
+From the project root:
+
+```shell
+poetry install
+```
+
+### Using the CLI script
+
+After install you can either:
+
+```shell
+poetry run count-tokens your_file.txt
 ```
 
 ## Running Tests
 
 If you'd like to run the tests for this module, use the pytest command:
 
-`pytest test_count_tokens.py`
+```shell
+poetry run pytest
+```
+
+The test configuration is in `pyproject.toml` (quiet mode by default).
 
 ## Links
 

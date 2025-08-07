@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-import count_tokens
+from token_counter import count_tokens
 
 EXIT_SUCCESS = 0
 EXIT_GENERAL_FAILURE = 1
@@ -45,7 +45,7 @@ def test_parse_arguments_success(test_file):
 
 
 def test_parse_arguments_failure():
-    """Failing to include an file to parse should cause a system exit."""
+    """Failing to include a file to parse should cause a system exit."""
     sys.argv = ["count_tokens.py"]
     with pytest.raises(SystemExit) as cm:
         _ = count_tokens.parse_arguments()
@@ -75,11 +75,11 @@ def test_system_exit_upon_empty_file(empty_file):
 
 
 def test_system_exit_upon_non_existent_file():
-    """A non-existent file should causes a system exit from main."""
+    """A non-existent file should cause a system exit from main."""
     sys.argv = ["count_tokens.py", "non_existent_file.txt"]
     with pytest.raises(SystemExit) as cm:
         count_tokens.main()
-    assert cm.value.code == 1
+    assert cm.value.code == EXIT_GENERAL_FAILURE
 
 
 def test_full_run_success(test_file):

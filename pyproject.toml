@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "token-counter"
+version = "0.2.0"
+description = "Count tokens using tiktoken"
+authors = ["Michelle Welcks"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "token_counter" }]
+repository = "https://github.com/binarysubstrate/token-counter"
+keywords = ["tokens", "tiktoken", "openai"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+tiktoken = ">=0.6,<1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+
+[tool.poetry.scripts]
+count-tokens = "token_counter.count_tokens:main"
+
+[tool.pytest.ini_options]
+testpaths = ["token_counter"]
+addopts = "-q"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
