@@ -8,13 +8,13 @@ semantics are intentionally similar to a very small subset of
 ``.gitignore``: each non-empty, non-comment line is treated as a shell
 style glob pattern (``fnmatch``) against the root-relative path of a file
 or directory. A trailing ``/`` on a pattern is ignored and is equivalent
-to the directory name alone. If an ignore file is not present a built-in
-default set of patterns (Python / Node / Git clutter) is used.
+to the directory name alone. If an ignore file is not present, no files
+are ignored (all files in the directory tree are processed).
 
 Functions:
     read_file: Return the content of a file as a string.
     process_tokens: Return the number of tokens in a string.
-    load_ignore_patterns: Load ignore patterns from file or defaults.
+    load_ignore_patterns: Load ignore patterns from file.
     iter_files: Yield file paths under a directory honoring ignore rules.
     analyze_directory: Return per-file and total token counts.
     main: CLI entrypoint.
@@ -33,9 +33,7 @@ from typing import Dict, Iterable, List, Tuple
 
 import tiktoken
 
-# Built-in default ignore patterns. These are also written to the
-# repository root in a default ".tokenizerignore" file but we hard-code
-# them here so directory analysis still works when the file is absent.
+# Name of the ignore file to look for in directory analysis
 IGNORE_FILE_NAME = ".tokenizerignore"
 
 
@@ -106,14 +104,14 @@ def process_tokens(input_str, token_reference_model="gpt-4"):
 def load_ignore_patterns(
     root: str, ignore_filename: str = IGNORE_FILE_NAME
 ) -> List[str]:
-    """Load ignore patterns from an ignore file or fall back to defaults.
+    """Load ignore patterns from an ignore file.
 
     Args:
         root: Directory root being analyzed.
         ignore_filename: Name of the ignore file to look for.
 
     Returns:
-        List of glob patterns.
+        List of glob patterns from the ignore file, or empty list if file not found.
     """
     candidate = os.path.join(root, ignore_filename)
     patterns: List[str] = []
@@ -139,6 +137,17 @@ def _is_ignored(rel_path: str, patterns: List[str]) -> bool:
     """
     normalized_path = Path(rel_path).as_posix()
     path_segments = normalized_path.split("/")
+
+    # Convert patterns to set for faster lookups when doing exact matches
+    pattern_set = set(patterns)
+
+    # First check for exact matches (fast path)
+    if normalized_path in pattern_set:
+        return True
+    if any(segment in pattern_set for segment in path_segments):
+        return True
+
+    # Then check for glob pattern matches
     for pattern in patterns:
         if fnmatch(normalized_path, pattern):
             return True
@@ -147,30 +156,40 @@ def _is_ignored(rel_path: str, patterns: List[str]) -> bool:
     return False
 
 
-def traverse_files(
-    root: str, patterns: List[str], ignore_filename: str = IGNORE_FILE_NAME
-) -> Iterable[str]:
-    """Yield file paths under root honoring ignore patterns."""
-    for dirpath, dirnames, filenames in os.walk(root):
-        rel_dir = os.path.relpath(dirpath, root)
-        if rel_dir == ".":
-            rel_dir = ""
-        # Modify dirnames in place to prune traversal early.
-        pruned = []
-        for d in list(dirnames):
-            rel_sub = os.path.join(rel_dir, d) if rel_dir else d
-            if _is_ignored(rel_sub, patterns):
-                pruned.append(d)
-        for d in pruned:
-            dirnames.remove(d)
+def traverse_files(root: str, patterns_to_ignore: List[str]) -> Iterable[str]:
+    """Yield file paths under root honoring ignore patterns.
 
-        for fname in filenames:
-            rel_file = os.path.join(rel_dir, fname) if rel_dir else fname
-            if fname == ignore_filename:
+    Args:
+        root: Directory root to traverse
+        patterns_to_ignore: List of glob patterns to ignore
+    """
+
+    for dir_path, dir_names, file_names in os.walk(root):
+        relative_directory = os.path.relpath(dir_path, root)
+        if relative_directory == ".":
+            relative_directory = ""
+        # Modify dirnames in place to prune traversal early.
+        pruned_directory_names = []
+        for dir_name in list(dir_names):
+            relative_subdirectory = (
+                os.path.join(relative_directory, dir_name)
+                if relative_directory
+                else dir_name
+            )
+            if _is_ignored(relative_subdirectory, patterns_to_ignore):
+                pruned_directory_names.append(dir_name)
+        for dir_name in pruned_directory_names:
+            dir_names.remove(dir_name)
+
+        for file_name in file_names:
+            rel_file = (
+                os.path.join(relative_directory, file_name)
+                if relative_directory
+                else file_name
+            )
+            if _is_ignored(rel_file, patterns_to_ignore):
                 continue
-            if _is_ignored(rel_file, patterns):
-                continue
-            yield os.path.join(dirpath, fname)
+            yield os.path.join(dir_path, file_name)
 
 
 def _is_binary_file(fp: str, chunk_size: int = 1024) -> bool:
