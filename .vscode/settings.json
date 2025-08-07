@@ -5,6 +5,7 @@
     "pyproject",
     "pytest",
     "testpaths",
-    "tiktoken"
+    "tiktoken",
+    "tokenizerignore"
   ]
 }
