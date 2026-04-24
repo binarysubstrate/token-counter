@@ -1,29 +1,32 @@
-[tool.poetry]
+[project]
 name = "token-counter"
 version = "0.2.0"
 description = "Count tokens using tiktoken"
-authors = ["Michelle Welcks"]
+authors = [{ name = "Michelle Welcks" }]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "token_counter" }]
-repository = "https://github.com/binarysubstrate/token-counter"
+requires-python = ">=3.12,<4"
 keywords = ["tokens", "tiktoken", "openai"]
+dependencies = ["tiktoken>=0.6,<1.0"]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-tiktoken = ">=0.6,<1.0"
+[project.urls]
+Repository = "https://github.com/binarysubstrate/token-counter"
+
+[project.scripts]
+count-tokens = "token_counter.count_tokens:main"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
+packages = [{ include = "token_counter" }]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
 flake8 = "^7.0"
-
-[tool.poetry.scripts]
-count-tokens = "token_counter.count_tokens:main"
 
 [tool.pytest.ini_options]
 testpaths = ["token_counter"]
 addopts = "-q"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"

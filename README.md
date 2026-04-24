@@ -65,6 +65,7 @@ This project uses:
 - [Poetry](https://python-poetry.org/) (dependency management)
 - `tiktoken` (runtime dependency)
 - `pytest` (dev dependency)
+- `flake8` (dev dependency)
 
 ## Installation
 
@@ -84,28 +85,28 @@ git clone https://github.com/binarysubstrate/token-counter.git
 
 ### Set Python version (pyenv)
 
-Install Python ^3.12 if you don't have it yet:
+Install any supported Python version if you do not have one yet. For example, a Python 3.13 release:
 
 ```shell
 # Example
 # Skip if installed
-pyenv install 3.13.1  
+pyenv install 3.13
 ```
 
 Set the local version (writes `.python-version`):
 
 ```shell
-pyenv local 3.13.1  
+pyenv local 3.13
 ```
 
 On Windows (pyenv-win) the commands are the same once pyenv-win is installed.
 
 ### Install Poetry
 
-If Poetry is not installed:
+This project expects Poetry 2 or newer. If Poetry is not installed yet, use the official installer or another supported install method from the Poetry documentation. You can verify the installed version with:
 
 ```shell
-pip install --user poetry  # or follow official installer instructions
+poetry --version
 ```
 
 ### Install dependencies
@@ -114,6 +115,12 @@ From the project root:
 
 ```shell
 poetry install
+```
+
+If you need to bind Poetry to a specific interpreter before installing, run:
+
+```shell
+poetry env use 3.13
 ```
 
 ### Using the CLI script
